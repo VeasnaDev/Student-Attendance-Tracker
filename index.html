@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance & Notification System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #16a34a;
+            --error: #dc2626;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            gap: 0.75rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .card-icon {
+            width: 2rem;
+            height: 2rem;
+            color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            gap: 0.5rem;
+        }
+
+        .button-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .button-secondary {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .button-secondary:hover {
+            background: var(--background);
+        }
+
+        .button-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--background);
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: rgba(22, 163, 74, 0.1);
+            color: var(--success);
+        }
+
+        .badge-error {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--error);
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        #reader {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification-success {
+            background: var(--success);
+        }
+
+        .notification-error {
+            background: var(--error);
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: var(--background);
+        }
+
+        .file-drop {
+            border: 2px dashed var(--border);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-drop:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        /* Icons */
+        .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Student Attendance & Notification System</h1>
+        </header>
+
+        <div class="grid grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2m2 0l2-4h-4l2 4zm-6-11h2M4 12h2m6 0l2-4h-4l2 4z"/>
+                    </svg>
+                    <h2>Scan Attendance</h2>
+                </div>
+                <div id="reader"></div>
+                <div id="scanResult"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2m2 0l2-4h-4l2 4zm-6-11h2M4 12h2m6 0l2-4h-4l2 4z"/>
+                    </svg>
+                    <h2>Generate QR Code</h2>
+                </div>
+                <div class="input-group">
+                    <select id="studentSelect" class="input" onchange="generateQRCode()">
+                        <option value="">Select Student</option>
+                    </select>
+                </div>
+                <div id="qrcode"></div>
+                <button onclick="downloadQR()" class="button button-primary">Download QR Code</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+                <h2>Student Registration</h2>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="showTab(event, 'single')">Single Entry</button>
+                <button class="tab" onclick="showTab(event, 'bulk')">Bulk Import</button>
+            </div>
+
+            <div id="singleEntry" class="tab-content active">
+                <div class="input-group">
+                    <label class="label">Student Name</label>
+                    <input type="text" id="studentName" class="input" required>
+                </div>
+                <div class="input-group">
+                    <label class="label">Student ID</label>
+                    <input type="text" id="studentId" class="input" required>
+                </div>
+                <div class="input-group">
+                    <label class="label">Parent's Email</label>
+                    <input type="email" id="parentEmail" class="input" required>
+                </div>
+                <button onclick="addStudent()" class="button button-primary">Add Student</button>
+            </div>
+
+            <div id="bulkEntry" class="tab-content" style="display: none;">
+                <div class="file-drop" onclick="document.getElementById('csvFile').click()">
+                    <input type="file" id="csvFile" accept=".csv" onchange="handleFileUpload()" style="display: none;">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p>Click to upload CSV or drag and drop</p>
+                </div>
+                <textarea id="bulkData" class="input" style="margin-top: 1rem; min-height: 200px;" placeholder="CSV data will appear here..."></textarea>
+                <button onclick="importBulkStudents()" class="button button-primary">Import Students</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <h2>Attendance Records</h2>
+            </div>
+
+            <div class="controls">
+                <div class="input-group">
+                    <label class="label">Date</label>
+                    <input type="date" id="attendanceDate" class="input">
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="selectAll" class="checkbox" onchange="toggleSelectAll()">
+                    <label>Select All</label>
+                </div>
+                <div class="button-group">
+                    <button onclick="markSelectedAttendance('present')" class="button button-primary">Mark Present</button>
+                    <button onclick="markSelectedAttendance('absent')" class="button button-secondary">Mark Absent</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="headerCheckbox" class="checkbox" onchange="toggleSelectAll()">
+                            </th>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Parent Email</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                <h2>Parent Notifications</h2>
+            </div>
+            
+            <div class="input-group">
+                <div class="flex-container" style="display: flex; gap: 1rem; align-items: center;">
+                    <input type="email" id="parentMonitorEmail" class="input" placeholder="Enter parent email" style="flex: 1;">
+                    <button onclick="startMonitoring()" class="button button-primary">Start Monitoring</button>
+                    <button onclick="toggleSound()" id="soundButton" class="button button-secondary">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                        </svg>
+                        Sound On
+                    </button>
+                </div>
+            </div>
+
+            <div id="notificationList" class="notification-list"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <h2>System Controls</h2>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="clearAllData()" class="button button-danger">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Clear All Data
+                </button>
+                <button onclick="exportAllData()" class="button button-secondary">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Export Data
+                </button>
+            </div>
+        </div>
+
+        <div id="notification" class="notification" style="display: none;"></div>
+        
+        <audio id="notificationSound">
+            <source src="https://jmp.sh/s/eppaIYHdY3heBFgnDtyc" type="audio/mp3">
+        </audio>
+    </div>
+
+    <script>
+        // All the existing JavaScript code remains the same
+        // The functionality doesn't change, only the UI has been updated
+            
+        let students = [];
+        let html5QrcodeScanner;
+        let currentQRCode = null;
+        let currentEmail = '';
+        let soundEnabled = true;
+        let lastCheckTime = 0;
+
+        // Initialize the system
+        window.onload = function() {
+            initializeScanner();
+            loadStudentsFromStorage();
+            initializeDateInput();
+            updateStudentSelect();
+            console.log('System initialized');
+            lastCheckTime = new Date().getTime();
+        };
+
+        function handleAttendanceNotification(student, status) {
+            // Get existing notifications or initialize empty array
+            const notifications = JSON.parse(localStorage.getItem('attendance_notifications') || '[]');
+            
+            // Create new notification
+            const notification = {
+                studentId: student.id,
+                studentName: student.name,
+                parentEmail: student.parentEmail,
+                status: status,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Add new notification to the beginning of the array
+            notifications.unshift(notification);
+            
+            // Keep only last 100 notifications to prevent storage overflow
+            const trimmedNotifications = notifications.slice(0, 100);
+            
+            // Save back to localStorage
+            localStorage.setItem('attendance_notifications', JSON.stringify(trimmedNotifications));
+        }
+
+        function initializeScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear();
+            }
+            
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader", 
+                { 
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                }
+            );
+            
+            html5QrcodeScanner.render(onScanSuccess, onScanError);
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            try {
+                const studentId = decodedText;
+                const student = students.find(s => s.id === studentId);
+                
+                if (student) {
+                    markAttendance(student, 'present');
+                    showNotification(`Marked ${student.name} as present`, 'success');
+                } else {
+                    showNotification('Student not found', 'error');
+                }
+            } catch (error) {
+                showNotification('Invalid QR Code', 'error');
+            }
+        }
+
+        function onScanError(error) {
+            console.warn(`QR Code scan error: ${error}`);
+        }
+
+        function showTab(event, tabName) {
+            event.preventDefault();
+            
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.getElementById(tabName + 'Entry').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function toggleSelectAll() {
+            const headerCheckbox = document.getElementById('headerCheckbox');
+            const checkboxes = document.querySelectorAll('#attendanceBody input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = headerCheckbox.checked;
+            });
+        }
+
+        function markSelectedAttendance(status) {
+            const date = document.getElementById('attendanceDate').value;
+            const checkboxes = document.querySelectorAll('#attendanceBody input[type="checkbox"]:checked');
+            const selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+            
+            if (selectedIds.length === 0) {
+                showNotification('Please select at least one student', 'error');
+                return;
+            }
+
+            selectedIds.forEach(id => {
+                const student = students.find(s => s.id === id);
+                if (student) {
+                    markAttendance(student, status);
+                }
+            });
+
+            showNotification(`Marked ${selectedIds.length} students as ${status}`, 'success');
+            updateAttendanceTable();
+        }
+
+        function addStudent() {
+            const name = document.getElementById('studentName').value.trim();
+            const id = document.getElementById('studentId').value.trim();
+            const email = document.getElementById('parentEmail').value.trim();
+
+            if (!name || !id || !email) {
+                showNotification('Please fill all fields', 'error');
+                return;
+            }
+
+            if (students.some(s => s.id === id)) {
+                showNotification('Student ID already exists', 'error');
+                return;
+            }
+
+            const student = {
+                id: id,
+                name: name,
+                parentEmail: email,
+                attendance: []
+            };
+
+            students.push(student);
+            saveToStorage();
+            updateStudentSelect();
+            clearForm();
+            showNotification('Student added successfully', 'success');
+            updateAttendanceTable();
+        }
+
+        function markAttendance(student, status) {
+            const date = document.getElementById('attendanceDate').value;
+            const time = new Date().toLocaleTimeString();
+
+            // Remove existing attendance for the same date if exists
+            student.attendance = student.attendance.filter(a => a.date !== date);
+
+            // Add new attendance record
+            student.attendance.push({
+                date: date,
+                status: status,
+                time: time
+            });
+
+            // Save attendance record
+            saveToStorage();
+            updateAttendanceTable();
+            
+            // Create notification
+            handleAttendanceNotification(student, status);
+        }
+
+        function generateQRCode() {
+            const studentId = document.getElementById('studentSelect').value;
+            if (!studentId) {
+                showNotification('Please select a student first', 'error');
+                return;
+            }
+
+            const qrcodeElement = document.getElementById("qrcode");
+            qrcodeElement.innerHTML = ''; // Clear previous QR code
+
+            currentQRCode = new QRCode(qrcodeElement, {
+                text: studentId,
+                width: 200,
+                height: 200
+            });
+        }
+
+        function downloadQR() {
+            const qrCanvas = document.querySelector('#qrcode canvas');
+            if (!qrCanvas) {
+                showNotification('Please generate a QR code first', 'error');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = 'student-qr.png';
+            link.href = qrCanvas.toDataURL();
+            link.click();
+        }
+
+        function importBulkStudents() {
+            const bulkData = document.getElementById('bulkData').value.trim();
+            if (!bulkData) {
+                showNotification('Please provide data to import', 'error');
+                return;
+            }
+
+            const lines = bulkData.split('\n');
+            let successCount = 0;
+            let errorCount = 0;
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+
+                const [id, name, email] = line.split(',').map(item => item.trim());
+                
+                if (!id || !name || !email) {
+                    errorCount++;
+                    return;
+                }
+
+                if (students.some(s => s.id === id)) {
+                    errorCount++;
+                    return;
+                }
+
+                students.push({
+                    id: id,
+                    name: name,
+                    parentEmail: email,
+                    attendance: []
+                });
+                successCount++;
+            });
+
+            saveToStorage();
+            updateStudentSelect();
+            updateAttendanceTable();
+            document.getElementById('bulkData').value = '';
+            document.getElementById('csvFile').value = '';
+            showNotification(`Imported ${successCount} students. ${errorCount} errors.`, 'success');
+        }
+
+        function updateStudentSelect() {
+            const select = document.getElementById('studentSelect');
+            select.innerHTML = '<option value="">Select Student</option>';
+            
+            students.sort((a, b) => a.name.localeCompare(b.name)).forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = `${student.name} (${student.id})`;
+                select.appendChild(option);
+            });
+        }
+
+        function updateAttendanceTable() {
+            const tbody = document.getElementById('attendanceBody');
+            tbody.innerHTML = '';
+
+            const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedStudents.forEach(student => {
+                student.attendance.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="checkbox-column">
+                            <input type="checkbox" value="${student.id}">
+                        </td>
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${record.date}</td>
+                        <td><span class="status-badge status-${record.status}">${record.status.toUpperCase()}</span></td>
+                        <td>${record.time || 'N/A'}</td>
+                        <td>${student.parentEmail}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        function clearAllData() {
+            if (confirm("Are you sure you want to clear all data? This action cannot be undone.")) {
+                localStorage.removeItem('students');
+                localStorage.removeItem('attendance_notifications');
+                
+                students = [];
+                
+                if (currentQRCode) {
+                    currentQRCode.clear();
+                    currentQRCode = null;
+                }
+                
+                clearForm();
+                document.getElementById('bulkData').value = '';
+                const fileInput = document.getElementById('csvFile');
+                if (fileInput) fileInput.value = '';
+                
+                updateStudentSelect();
+                updateAttendanceTable();
+                document.getElementById('notificationList').innerHTML = '';
+                
+                showNotification('All data has been cleared successfully', 'success');
+            }
+        }
+
+        function exportAllData() {
+            if (students.length === 0) {
+                showNotification('No data to export', 'error');
+                return;
+            }
+
+            // Export attendance data
+            let attendanceCSV = "Student ID,Name,Date,Status,Time,Parent Email\n";
+            students.forEach(student => {
+                student.attendance.forEach(record => {
+                    attendanceCSV += `${student.id},${student.name},${record.date},${record.status},${record.time},${student.parentEmail}\n`;
+                });
+            });
+
+            // Export notifications data
+            const notifications = JSON.parse(localStorage.getItem('attendance_notifications') || '[]');
+            let notificationsCSV = "\n\nNotifications\nStudent ID,Student Name,Status,Timestamp,Parent Email\n";
+            notifications.forEach(notification => {
+                notificationsCSV += `${notification.studentId},${notification.studentName},${notification.status},${notification.timestamp},${notification.parentEmail}\n`;
+            });
+
+            const csvContent = attendanceCSV + notificationsCSV;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'attendance_and_notifications_report.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Data exported successfully', 'success');
+        }
+
+        // Parent Notification Functions
+        function startMonitoring() {
+            currentEmail = document.getElementById('parentMonitorEmail').value;
+            if (!currentEmail) {
+                showNotification('Please enter your email', 'error');
+                return;
+            }
+            checkForNewNotifications();
+            setInterval(checkForNewNotifications, 1000); // Check every second
+            showNotification('Started monitoring notifications', 'success');
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundButton').textContent = soundEnabled ? 'Sound On' : 'Sound Off';
+            showNotification(`Notification sound ${soundEnabled ? 'enabled' : 'disabled'}`, 'success');
+        }
+
+        function checkForNewNotifications() {
+            if (!currentEmail) return;
+
+            const notifications = JSON.parse(localStorage.getItem('attendance_notifications') || '[]');
+            const myNotifications = notifications.filter(n => n.parentEmail === currentEmail);
+            
+            const currentTime = new Date().getTime();
+            const newNotifications = myNotifications.filter(n => {
+                const notificationTime = new Date(n.timestamp).getTime();
+                return notificationTime > lastCheckTime;
+            });
+
+            if (newNotifications.length > 0) {
+                newNotifications.forEach(displayNotification);
+                if (soundEnabled) {
+                    document.getElementById('notificationSound').play();
+                }
+                lastCheckTime = currentTime;
+            }
+        }
+
+        function displayNotification(notification) {
+            const list = document.getElementById('notificationList');
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.innerHTML = `
+                <strong>${notification.studentName}</strong>
+                has been marked
+                <span class="status-badge status-${notification.status.toLowerCase()}">
+                    ${notification.status}
+                </span>
+                <br>
+                <small>Time: ${new Date(notification.timestamp).toLocaleString()}</small>
+            `;
+            list.insertBefore(item, list.firstChild);
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function clearForm() {
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentId').value = '';
+            document.getElementById('parentEmail').value = '';
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('students', JSON.stringify(students));
+        }
+
+        function loadStudentsFromStorage() {
+            const stored = localStorage.getItem('students');
+            if (stored) {
+                students = JSON.parse(stored);
+                updateAttendanceTable();
+            }
+        }
+
+        function initializeDateInput() {
+            const today = new Date();
+            const dateInput = document.getElementById('attendanceDate');
+            dateInput.valueAsDate = today;
+        }
+
+        function handleFileUpload() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('bulkData').value = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+        }
+    
+    </script>
+</body>
+</html>
